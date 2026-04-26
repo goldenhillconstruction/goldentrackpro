@@ -5,7 +5,1587 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoldenTrack Pro — Construction Business Management</title>
 <meta name="description" content="Professional construction business management. Quotes, jobs, clients, materials calculator — built for contractors.">
+<style><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoldenTrack Pro — Construction Business Management</title>
+<meta name="description" content="Professional construction business management. Quotes, jobs, clients, materials calculator — built for contractors.">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --gold: #C8A800;
+    --gold-dark: #9a7e00;
+    --gold-light: #fff8cc;
+    --gold-mid: #f0d800;
+    --black: #0d0d0d;
+    --dark: #141414;
+    --dark2: #1c1c1c;
+    --dark3: #252525;
+    --border: rgba(200,168,0,0.18);
+    --border2: rgba(200,168,0,0.35);
+    --text: #f0ede6;
+    --text2: #9e9a8e;
+    --text3: #6a6760;
+    --ok: #2ecc71;
+    --bad: #e74c3c;
+    --info: #3498db;
+    --warn: #f39c12;
+    --r: 8px;
+    --r-lg: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--gold);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--black);
+    letter-spacing: -0.5px;
+  }
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+  }
+  .brand-name span { color: var(--gold); }
+  .brand-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .lang-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .lang-btn.on { background: var(--gold); border-color: var(--gold); color: var(--black); }
+  .notif-dot {
+    width: 8px; height: 8px;
+    background: var(--bad);
+    border-radius: 50%;
+    display: none;
+  }
+  .notif-dot.show { display: block; }
+
+  /* NAV */
+  .nav {
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    padding: 0 12px;
+    scrollbar-width: none;
+    gap: 2px;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .ni {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--text3);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .ni:hover { color: var(--text2); }
+  .ni.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--dark3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.ok { border-color: var(--ok); color: var(--ok); }
+  .toast.err { border-color: var(--bad); color: var(--bad); }
+
+  /* NOTIF BANNER */
+  .notif-banner {
+    background: rgba(243,156,18,0.1);
+    border-bottom: 1px solid rgba(243,156,18,0.3);
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--warn);
+    display: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+  }
+  .notif-banner.show { display: block; }
+
+  /* PAGES */
+  .pg { display: none; padding: 14px; }
+  .pg.on { display: block; }
+
+  /* METRICS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .mc {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 12px 14px;
+  }
+  .mc-label { font-size: 10px; color: var(--text3); font-family: 'Syne', sans-serif; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 4px; }
+  .mc-val { font-size: 22px; font-weight: 300; font-family: 'Syne', sans-serif; }
+  .mc-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .gv { color: var(--gold); }
+  .ok { color: var(--ok); }
+  .bad { color: var(--bad); }
+
+  /* CARDS */
+  .card {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .ct {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 10px;
+    letter-spacing: -0.2px;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: var(--r);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .btn:hover { background: var(--dark3); color: var(--text); }
+  .btn-gold {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--black);
+    font-weight: 700;
+  }
+  .btn-gold:hover { background: var(--gold-dark); border-color: var(--gold-dark); }
+  .btn-sm { padding: 4px 9px; font-size: 10px; }
+  .btn-danger { border-color: rgba(231,76,60,0.4); color: var(--bad); }
+  .btn-danger:hover { background: rgba(231,76,60,0.1); }
+
+  /* TABLES */
+  .tw { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+  th {
+    text-align: left;
+    padding: 6px 8px;
+    font-size: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 8px;
+    border-bottom: 1px solid rgba(200,168,0,0.07);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(200,168,0,0.04); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .bq { background: rgba(52,152,219,0.15); color: #5dade2; border: 1px solid rgba(52,152,219,0.25); }
+  .ba { background: rgba(243,156,18,0.15); color: var(--warn); border: 1px solid rgba(243,156,18,0.25); }
+  .bp { background: rgba(200,168,0,0.12); color: var(--gold); border: 1px solid var(--border2); }
+  .bd2 { background: rgba(46,204,113,0.12); color: var(--ok); border: 1px solid rgba(46,204,113,0.25); }
+  .bi { background: var(--dark3); color: var(--text3); border: 1px solid var(--border); }
+
+  /* FORMS */
+  .fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .fg label { font-size: 10px; color: var(--text3); font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+  .fg input, .fg select, .fg textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    background: var(--dark3);
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.15s;
+  }
+  .fg input:focus, .fg select:focus, .fg textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .fg select option { background: var(--dark3); }
+  .fg textarea { resize: vertical; min-height: 60px; }
+  .fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  @media (max-width: 480px) { .fr2, .fr3 { grid-template-columns: 1fr; } }
+
+  /* MODAL */
+  .modal-wrap {
+    background: rgba(0,0,0,0.7);
+    border-radius: var(--r-lg);
+    padding: 20px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .modal {
+    background: var(--dark2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    margin-bottom: 14px;
+    letter-spacing: -0.4px;
+  }
+
+  /* MISC */
+  .dv { height: 1px; background: var(--border); margin: 10px 0; }
+  .pb { height: 3px; background: var(--dark3); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .pf { height: 100%; background: var(--gold); border-radius: 2px; }
+  .rem {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--r);
+    background: var(--dark3);
+    margin-bottom: 6px;
+    border: 1px solid var(--border);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .dr { background: var(--bad); }
+  .dg { background: var(--gold); }
+  .dge { background: var(--ok); }
+  .rt { font-size: 12px; line-height: 1.4; }
+  .rs { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .av {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .pr-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .pr-row:last-child { border-bottom: none; font-weight: 500; font-size: 13px; padding-top: 8px; }
+  .sec-tag {
+    font-size: 9px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+  .kc {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 12px 14px;
+  }
+  .kn { font-size: 10px; color: var(--text3); font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 3px; }
+  .kv { font-size: 20px; font-weight: 300; font-family: 'Syne', sans-serif; }
+  .kt { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .ev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .ev-meeting { background: var(--info); }
+  .ev-start { background: var(--ok); }
+  .ev-follow { background: var(--gold); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 8px; }
+  .cal-day-hdr { text-align: center; font-size: 9px; font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text3); padding: 3px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cal-day {
+    min-height: 34px;
+    border-radius: 5px;
+    padding: 3px 4px;
+    font-size: 10px;
+    background: var(--dark3);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
+    font-family: 'Syne', sans-serif;
+  }
+  .cal-day:hover { border-color: var(--border2); }
+  .cal-day.today { background: rgba(200,168,0,0.1); border-color: var(--gold); color: var(--gold); font-weight: 700; }
+  .cal-day.has-event { border-color: rgba(200,168,0,0.4); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-event-dot { width: 4px; height: 4px; border-radius: 50%; display: inline-block; margin: 1px; }
+  .calc-result {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .calc-row:last-child { border-bottom: none; font-weight: 500; font-size: 13px; padding-top: 6px; }
+  .calc-total {
+    background: rgba(200,168,0,0.1);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 8px 12px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .month-card {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  .month-hdr { font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 5px; display: flex; justify-content: space-between; }
+
+  /* PDF QUOTE */
+  .pdf-quote {
+    background: var(--dark2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .pdf-header {
+    background: var(--dark3);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pdf-body { padding: 16px 18px; }
+  .pdf-total {
+    background: rgba(200,168,0,0.08);
+    border-top: 1px solid var(--border2);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text3);
+    font-size: 12px;
+  }
+
+  /* SECTION HDR */
+  .sec-hdr {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark" id="brand-mark">GT</div>
+    <div>
+      <div class="brand-name">Golden<span>Track</span> Pro</div>
+      <div class="brand-sub">Construction Management</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="notif-dot" id="notif-dot"></div>
+    <button class="lang-btn on" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('es')">ES</button>
+  </div>
+</div>
+
+<div class="nav" id="nav">
+  <div class="ni on" onclick="go('dash',this)" data-en="Dashboard" data-es="Panel">Dashboard</div>
+  <div class="ni" onclick="go('agenda',this)" data-en="Agenda" data-es="Agenda">Agenda</div>
+  <div class="ni" onclick="go('quotes',this)" data-en="Quotes" data-es="Cotizaciones">Quotes</div>
+  <div class="ni" onclick="go('calc',this)" data-en="Calculator" data-es="Calculadora">Calculator</div>
+  <div class="ni" onclick="go('jobs',this)" data-en="Jobs" data-es="Proyectos">Jobs</div>
+  <div class="ni" onclick="go('clients',this)" data-en="Clients" data-es="Clientes">Clients</div>
+  <div class="ni" onclick="go('finance',this)" data-en="Finance" data-es="Finanzas">Finance</div>
+  <div class="ni" onclick="go('reminders',this)" data-en="Reminders" data-es="Recordatorios">Reminders</div>
+  <div class="ni" onclick="go('reports',this)" data-en="Reports" data-es="Reportes">Reports</div>
+  <div class="ni" onclick="go('kpi',this)" data-en="KPIs" data-es="KPIs">KPIs</div>
+  <div class="ni" onclick="go('settings',this)" data-en="Settings" data-es="Ajustes">Settings</div>
+</div>
+
+<div class="notif-banner" id="notif-banner"></div>
+<div class="toast" id="toast"></div>
+
+<!-- DASHBOARD -->
+<div class="pg on" id="p-dash">
+  <div class="metrics" id="dash-metrics"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px">
+    <div class="card" style="margin-bottom:0">
+      <div class="row"><div class="ct" id="d-today-lbl">Today</div><button class="btn btn-sm" onclick="go('agenda',null)">→</button></div>
+      <div id="dash-today"></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="row"><div class="ct" id="d-urgent-lbl">Urgent</div><button class="btn btn-sm" onclick="go('reminders',null)">→</button></div>
+      <div id="dash-urgent"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row"><div class="ct" id="d-jobs-lbl">Recent Jobs</div></div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th id="d-th-client">Client</th><th id="d-th-type">Type</th><th id="d-th-val">Value</th><th id="d-th-status">Status</th></tr></thead>
+      <tbody id="dash-jobs"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- AGENDA -->
+<div class="pg" id="p-agenda">
+  <div class="sec-hdr"><span id="agenda-title">Agenda</span><button class="btn btn-gold" onclick="openNewEvent()">+ Event</button></div>
+  <div id="event-form-area"></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn" onclick="changeMonth(-1)">‹ Prev</button>
+      <div style="font-size:13px;font-family:'Syne',sans-serif;font-weight:700" id="cal-label"></div>
+      <button class="btn" onclick="changeMonth(1)">Next ›</button>
+    </div>
+    <div class="cal-grid" id="cal-hdrs"></div>
+    <div class="cal-grid" id="cal-body"></div>
+  </div>
+  <div class="card">
+    <div class="ct" id="upcoming-lbl">Upcoming Events</div>
+    <div id="upcoming-list"></div>
+  </div>
+</div>
+
+<!-- QUOTES -->
+<div class="pg" id="p-quotes">
+  <div class="sec-hdr"><span id="q-title">Quotes</span><button class="btn btn-gold" onclick="openNewQuote()">+ New</button></div>
+  <div id="quote-form-area"></div>
+  <div id="pdf-area"></div>
+  <div class="card">
+    <div class="ct" id="q-saved-lbl">Saved Quotes</div>
+    <div class="tw"><table style="table-layout:fixed">
+      <colgroup><col style="width:12%"><col style="width:20%"><col style="width:18%"><col style="width:13%"><col style="width:13%"><col style="width:12%"><col style="width:12%"></colgroup>
+      <thead><tr><th>#</th><th id="q-th-c">Client</th><th id="q-th-j">Job</th><th id="q-th-cost">Cost</th><th id="q-th-price">Price</th><th id="q-th-s">Status</th><th>PDF</th></tr></thead>
+      <tbody id="quotes-body"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="pg" id="p-calc">
+  <div class="sec-hdr" id="calc-title">Material Calculator</div>
+  <div class="card">
+    <div class="fr2" style="margin-bottom:8px">
+      <div class="fg">
+        <label id="calc-type-lbl">Job Type</label>
+        <select id="calc-type" onchange="updateCalcFields()">
+          <option value="concrete">Concrete / Concreto</option>
+          <option value="interlock">Interlock / Paving</option>
+          <option value="retaining">Retaining Wall / Muro</option>
+          <option value="excavation">Excavation / Excavación</option>
+          <option value="powerwash">Power Wash + Seal</option>
+        </select>
+      </div>
+      <div class="fg"><label id="calc-area-lbl">Area (sqft)</label><input type="number" id="calc-area" value="0" oninput="calcMats()"></div>
+    </div>
+    <div id="calc-fields"></div>
+    <button class="btn btn-gold" onclick="calcMats()" id="calc-btn">Calculate</button>
+  </div>
+  <div id="calc-result"></div>
+</div>
+
+<!-- JOBS -->
+<div class="pg" id="p-jobs">
+  <div class="sec-hdr"><span id="j-title">Jobs</span><button class="btn btn-gold" onclick="openNewJob()">+ New</button></div>
+  <div id="job-form-area"></div>
+  <div class="tw"><table style="table-layout:fixed">
+    <colgroup><col style="width:10%"><col style="width:16%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:13%"><col style="width:13%"></colgroup>
+    <thead><tr><th>#</th><th id="j-th-c">Client</th><th id="j-th-t">Type</th><th id="j-th-q">Quote</th><th id="j-th-p">Paid</th><th id="j-th-b">Balance</th><th id="j-th-s">Status</th><th id="j-th-st">Start</th></tr></thead>
+    <tbody id="jobs-body"></tbody>
+  </table></div>
+</div>
+
+<!-- CLIENTS -->
+<div class="pg" id="p-clients">
+  <div class="sec-hdr"><span id="cl-title">Clients</span><button class="btn btn-gold" onclick="openNewClient()">+ Add</button></div>
+  <div id="client-form-area"></div>
+  <div id="clients-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px"></div>
+</div>
+
+<!-- FINANCE -->
+<div class="pg" id="p-finance">
+  <div class="sec-hdr" id="fin-title">Finance</div>
+  <div class="metrics" id="fin-metrics"></div>
+  <div class="card">
+    <div class="ct" id="fin-chart-lbl">Revenue by Job Type</div>
+    <div id="fin-chart"></div>
+  </div>
+  <div class="card">
+    <div class="ct" id="fin-inv-lbl">Outstanding Invoices</div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Client</th><th>Balance</th><th>Start</th><th>Status</th></tr></thead>
+      <tbody id="fin-inv"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- REMINDERS -->
+<div class="pg" id="p-reminders">
+  <div class="sec-hdr"><span id="rem-title">Reminders</span><button class="btn btn-gold" onclick="openNewRem()">+ Add</button></div>
+  <div id="rem-form-area"></div>
+  <div class="card"><div class="sec-tag" id="rem-urg-lbl">Urgent</div><div id="rem-urg"></div></div>
+  <div class="card"><div class="sec-tag" id="rem-wk-lbl">This Week</div><div id="rem-wk"></div></div>
+  <div class="card"><div class="sec-tag" id="rem-fut-lbl">Upcoming</div><div id="rem-fut"></div></div>
+</div>
+
+<!-- REPORTS -->
+<div class="pg" id="p-reports">
+  <div class="sec-hdr" id="rep-title">Monthly Reports</div>
+  <div class="fr2" style="margin-bottom:10px">
+    <div class="fg"><label id="rep-yr-lbl">Year</label><input type="number" id="rep-year" value="2026" oninput="renderReports()"></div>
+    <div class="fg"><label id="rep-view-lbl">View</label>
+      <select id="rep-view" onchange="renderReports()">
+        <option value="monthly" id="rep-mo-opt">Monthly</option>
+        <option value="bytype" id="rep-type-opt">By Job Type</option>
+      </select>
+    </div>
+  </div>
+  <div id="reports-content"></div>
+</div>
+
+<!-- KPIs -->
+<div class="pg" id="p-kpi">
+  <div class="sec-hdr" id="kpi-title">KPIs & SOPs</div>
+  <div id="kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
+  <div class="card">
+    <div class="ct" id="sop-title">Standard Operating Procedures</div>
+    <div id="sop-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="pg" id="p-settings">
+  <div class="sec-hdr" id="set-title">Settings / Configuración</div>
+
+  <!-- COMPANY INFO -->
+  <div class="card">
+    <div class="ct" id="set-company-lbl">Company Information</div>
+
+    <!-- LOGO -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;color:var(--text3);font-family:'Syne',sans-serif;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:8px">Company Logo — appears on quotes &amp; invoices</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div id="logo-preview-box" style="width:90px;height:90px;background:var(--dark3);border:1px dashed var(--border2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          <img id="logo-preview-img" style="display:none;max-width:100%;max-height:100%;object-fit:contain" src="" alt="logo">
+          <span id="logo-placeholder-txt" style="font-size:10px;color:var(--text3);text-align:center;padding:6px">No logo<br>uploaded</span>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--dark3);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text2)">
+            Upload Logo (PNG or JPG)
+            <input type="file" id="logo-upload" accept="image/png,image/jpeg,image/jpg,image/svg+xml" style="display:none" onchange="handleLogoUpload(this)">
+          </label>
+          <div style="font-size:10px;color:var(--text3);margin-top:5px">Recommended: PNG with transparent background, min 200×200px</div>
+          <button class="btn btn-sm" style="margin-top:6px;color:var(--bad);border-color:rgba(231,76,60,0.3)" onclick="removeLogo()" id="logo-remove-btn">Remove logo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv"></div>
+    <div class="fr2">
+      <div class="fg"><label id="set-name-lbl">Company Name</label><input type="text" id="set-name" placeholder="e.g. Golden Hill Construction"></div>
+      <div class="fg"><label id="set-phone-lbl">Phone</label><input type="text" id="set-phone" placeholder="416 951 0306"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Email</label><input type="text" id="set-email" placeholder="info@company.ca"></div>
+      <div class="fg"><label>Website</label><input type="text" id="set-website" placeholder="www.company.ca"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Instagram</label><input type="text" id="set-ig" placeholder="@company"></div>
+      <div class="fg"><label id="set-addr-lbl">Address / City</label><input type="text" id="set-addr" placeholder="City, Province"></div>
+    </div>
+  </div>
+
+  <!-- LABOUR RATES -->
+  <div class="card">
+    <div class="ct" id="set-labour-lbl">Labour Rates / Tarifas de Mano de Obra</div>
+    <div class="fr3">
+      <div class="fg"><label id="set-cl-lbl">Crew Leader / day ($)</label><input type="number" id="set-crew-leader" placeholder="0"></div>
+      <div class="fg"><label id="set-lh-lbl">Lead Hand / day ($)</label><input type="number" id="set-lead-hand" placeholder="0"></div>
+      <div class="fg"><label id="set-hlp-lbl">Helper / day ($)</label><input type="number" id="set-helper" placeholder="0"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label id="set-crew-size-lbl">Default crew size</label><input type="number" id="set-crew-size" placeholder="3"></div>
+      <div class="fg"><label id="set-daily-lbl">Default daily rate total ($)</label><input type="number" id="set-daily-rate" placeholder="1200"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px" id="set-labour-note">Este total diario se usa como tarifa predeterminada en las cotizaciones.</div>
+  </div>
+
+  <!-- MATERIALS & SUPPLIERS -->
+  <div class="card">
+    <div class="ct" id="set-mat-lbl">Material Prices / Precios de Materiales</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px" id="set-mat-note">Actualiza con los precios de tus proveedores. Estos se usan en la calculadora.</div>
+
+    <div class="sec-tag" id="set-concrete-lbl">CONCRETE / CONCRETO</div>
+    <div class="fr3" style="margin-bottom:8px">
+      <div class="fg"><label>25 MPa ($/m³)</label><input type="number" id="sp-25mpa" placeholder="137"></div>
+      <div class="fg"><label>25 MPa AE ($/m³)</label><input type="number" id="sp-25ae" placeholder="140"></div>
+      <div class="fg"><label>32 MPa C2 AE ($/m³)</label><input type="number" id="sp-32mpa" placeholder="162"></div>
+    </div>
+    <div class="fr3" style="margin-bottom:12px">
+      <div class="fg"><label>35 MPa C1 AE ($/m³)</label><input type="number" id="sp-35mpa" placeholder="170"></div>
+      <div class="fg"><label id="set-smallpour-lbl">Small pour &lt;1.5m³ C25 ($/m³)</label><input type="number" id="sp-mrbin25" placeholder="220"></div>
+      <div class="fg"><label id="set-smallpour2-lbl">Small pour &lt;1.5m³ C32 ($/m³)</label><input type="number" id="sp-mrbin32" placeholder="230"></div>
+    </div>
+
+    <div class="sec-tag" id="set-agg-lbl">AGGREGATES / AGREGADOS ($/tonne)</div>
+    <div class="fr3" style="margin-bottom:8px">
+      <div class="fg"><label>3/4" Cr/Run Limestone</label><input type="number" id="sp-crrun" placeholder="25"></div>
+      <div class="fg"><label>3/4" Clear Limestone</label><input type="number" id="sp-clear" placeholder="32"></div>
+      <div class="fg"><label>1/4" Chips</label><input type="number" id="sp-chips" placeholder="28"></div>
+    </div>
+    <div class="fr3" style="margin-bottom:12px">
+      <div class="fg"><label>Crushed Concrete 3/4"</label><input type="number" id="sp-crush" placeholder="9"></div>
+      <div class="fg"><label>Crupi Clean Crush</label><input type="number" id="sp-clean" placeholder="14"></div>
+      <div class="fg"><label>Crushed Asphalt</label><input type="number" id="sp-asphalt" placeholder="6"></div>
+    </div>
+
+    <div class="sec-tag" id="set-supply-lbl">SUPPLIES / SUMINISTROS</div>
+    <div class="fr3">
+      <div class="fg"><label>Polymeric Sand ($/bag)</label><input type="number" id="sp-polysand" placeholder="23.99"></div>
+      <div class="fg"><label>Stone Adhesive XP Bond ($/tube)</label><input type="number" id="sp-adhesive" placeholder="19.50"></div>
+      <div class="fg"><label>Geotextile fabric ($/sqft)</label><input type="number" id="sp-geo" placeholder="0.12"></div>
+    </div>
+  </div>
+
+  <!-- EQUIPMENT -->
+  <div class="card">
+    <div class="ct" id="set-equip-lbl">Equipment Costs / Costos de Equipo</div>
+    <div class="fr3">
+      <div class="fg"><label id="set-excav-lbl">Excavator ($/hr)</label><input type="number" id="se-excavator" placeholder="150"></div>
+      <div class="fg"><label id="set-skid-lbl">Skid Steer ($/hr)</label><input type="number" id="se-skid" placeholder="100"></div>
+      <div class="fg"><label id="set-plate-lbl">Plate Compactor ($/hr)</label><input type="number" id="se-plate" placeholder="25"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label id="set-equip-def-lbl">Default equipment cost per job ($)</label><input type="number" id="se-default" placeholder="400"></div>
+      <div class="fg"><label id="set-fuel-lbl">Fuel cost ($/L)</label><input type="number" id="se-fuel" placeholder="2.20"></div>
+    </div>
+  </div>
+
+  <!-- DISPOSAL -->
+  <div class="card">
+    <div class="ct" id="set-disp-lbl">Disposal & Overhead / Disposición y Gastos</div>
+    <div class="fr3">
+      <div class="fg"><label id="set-load-lbl">Cost per disposal load ($)</label><input type="number" id="sd-load" placeholder="320"></div>
+      <div class="fg"><label id="set-truck-lbl">Truck cost / day ($)</label><input type="number" id="sd-truck" placeholder="150"></div>
+      <div class="fg"><label id="set-overhead-lbl">Fixed overhead / job ($)</label><input type="number" id="sd-overhead" placeholder="200"></div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="card">
+    <div class="ct" id="set-pricing-lbl">Pricing & Profit / Precios y Ganancia</div>
+    <div class="fr3">
+      <div class="fg"><label id="set-markup-lbl">Default markup % (profit)</label><input type="number" id="sp-markup" placeholder="25"></div>
+      <div class="fg"><label>HST / Tax %</label><input type="number" id="sp-hst" placeholder="13"></div>
+      <div class="fg"><label id="set-min-lbl">Minimum markup % allowed</label><input type="number" id="sp-min-markup" placeholder="20"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label id="set-deposit-lbl">Required deposit %</label><input type="number" id="sp-deposit" placeholder="50"></div>
+      <div class="fg"><label id="set-valid-lbl">Quote valid for (days)</label><input type="number" id="sp-valid" placeholder="30"></div>
+    </div>
+    <div style="background:var(--dark3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-top:6px;font-size:11px;color:var(--text2)" id="set-pricing-note">
+      Con un markup de <strong id="set-markup-preview" style="color:var(--gold)">25%</strong> sobre tus costos, tu margen de ganancia real es <strong id="set-margin-preview" style="color:var(--ok)">20%</strong> del precio al cliente.
+    </div>
+  </div>
+
+  <!-- QUOTE TERMS -->
+  <div class="card">
+    <div class="ct" id="set-terms-lbl">Quote Terms / Términos de Cotización</div>
+    <div class="fg"><label id="set-terms-en-lbl">Terms (English)</label><textarea id="st-terms-en" style="min-height:80px">• 50% deposit required to start
+• Balance due on completion
+• Valid for 30 days
+• Prices in CAD incl. HST as itemized
+• All work guaranteed for 1 year</textarea></div>
+    <div class="fg"><label id="set-terms-es-lbl">Terms (Spanish / Español)</label><textarea id="st-terms-es" style="min-height:80px">• Depósito del 50% requerido para iniciar
+• Saldo al completar el trabajo
+• Válido por 30 días
+• Precios en CAD + HST incluido
+• Todos los trabajos con garantía de 1 año</textarea></div>
+  </div>
+
+  <!-- ANNUAL TARGET -->
+  <div class="card">
+    <div class="ct" id="set-target-lbl">Business Goals / Metas del Negocio</div>
+    <div class="fr3">
+      <div class="fg"><label id="set-rev-target-lbl">Annual revenue target ($)</label><input type="number" id="sg-revenue" placeholder="300000"></div>
+      <div class="fg"><label id="set-job-target-lbl">Target avg job value ($)</label><input type="number" id="sg-avgjob" placeholder="10000"></div>
+      <div class="fg"><label id="set-conv-target-lbl">Target conversion rate %</label><input type="number" id="sg-conv" placeholder="70"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-top:4px">
+    <button class="btn btn-gold" onclick="saveSettings()" id="set-save-btn">Save Settings / Guardar</button>
+    <button class="btn" onclick="loadSettingsForm()" id="set-reset-btn">Reset / Cancelar</button>
+  </div>
+  <div id="set-saved-msg" style="display:none;margin-top:8px;font-size:12px;color:var(--ok);font-family:'Syne',sans-serif;font-weight:700">✓ Settings saved successfully</div>
+</div>
+
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+var lang = 'en';
+var DB = {
+  jobs: [], quotes: [], clients: [], reminders: [], events: [],
+  settings: { markup: 25, hst: 13, disposal: 320, equipment: 400 }
+};
+var nextJ=1, nextQ=1, nextC=1, nextR=1, nextE=1;
+var calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function fmt(n) { return '$' + Math.round(n||0).toLocaleString('en-CA'); }
+function pct(n) { return Math.round(n||0) + '%'; }
+function today() { return new Date().toISOString().slice(0,10); }
+function g(id) { var el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; }
+function gv(id) { var el=document.getElementById(id); return el ? el.value : ''; }
+
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : ' ok');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+function saveAll() {
+  try { localStorage.setItem('gtp_db', JSON.stringify(DB)); } catch(e){}
+}
+function loadAll() {
+  try {
+    var d = localStorage.getItem('gtp_db');
+    if (d) {
+      DB = JSON.parse(d);
+      if (!DB.jobs) DB.jobs = [];
+      if (!DB.quotes) DB.quotes = [];
+      if (!DB.clients) DB.clients = [];
+      if (!DB.reminders) DB.reminders = [];
+      if (!DB.events) DB.events = [];
+      if (!DB.settings) DB.settings = { markup:25, hst:13, disposal:320, equipment:400 };
+    }
+    recomputeIds();
+  } catch(e) {}
+}
+function recomputeIds() {
+  function maxId(arr, prefix) {
+    return arr.length ? Math.max.apply(null, arr.map(function(x){ return parseInt((x.id||'0').replace(prefix,''))||0; }))+1 : 1;
+  }
+  nextJ=maxId(DB.jobs,'J-'); nextQ=maxId(DB.quotes,'Q-');
+  nextC=maxId(DB.clients,'C-'); nextR=maxId(DB.reminders,'R-'); nextE=maxId(DB.events,'E-');
+}
+
+// ─── LANG ────────────────────────────────────────────────────────────────────
+var TX = {
+  en: {
+    'Dashboard':'Dashboard','Agenda':'Agenda','Quotes':'Quotes','Calculator':'Calculator',
+    'Jobs':'Jobs','Clients':'Clients','Finance':'Finance','Reminders':'Reminders',
+    'Reports':'Reports','KPIs':'KPIs',
+    'd-today-lbl':'Today','d-urgent-lbl':'Urgent','d-jobs-lbl':'Recent Jobs',
+    'd-th-client':'Client','d-th-type':'Type','d-th-val':'Value','d-th-status':'Status',
+    'agenda-title':'Agenda & Calendar','upcoming-lbl':'Upcoming Events',
+    'q-title':'Quotes','q-saved-lbl':'Saved Quotes',
+    'q-th-c':'Client','q-th-j':'Job','q-th-cost':'Cost','q-th-price':'Price','q-th-s':'Status',
+    'calc-title':'Material Calculator','calc-type-lbl':'Job Type','calc-area-lbl':'Area (sqft)','calc-btn':'Calculate',
+    'j-title':'Jobs','j-th-c':'Client','j-th-t':'Type','j-th-q':'Quote','j-th-p':'Paid','j-th-b':'Balance','j-th-s':'Status','j-th-st':'Start',
+    'cl-title':'Clients','fin-title':'Finance','fin-chart-lbl':'Revenue by Job Type','fin-inv-lbl':'Outstanding Invoices',
+    'rem-title':'Reminders','rem-urg-lbl':'URGENT','rem-wk-lbl':'THIS WEEK','rem-fut-lbl':'UPCOMING',
+    'rep-title':'Monthly Reports','rep-yr-lbl':'Year','rep-view-lbl':'View','rep-mo-opt':'Monthly','rep-type-opt':'By Job Type',
+    'kpi-title':'KPIs & SOPs','sop-title':'Standard Operating Procedures',
+    'status-quoted':'Quoted','status-approved':'Approved','status-progress':'In Progress','status-done':'Done','status-invoiced':'Invoiced',
+    'Save':'Save','Cancel':'Cancel','Meeting':'Quote Meeting','Start':'Job Start','Followup':'Follow-up',
+    'Active Jobs':'Active Jobs','Revenue YTD':'Revenue YTD','Quotes Pending':'Quotes Pending','Outstanding':'Outstanding',
+    'no-jobs':'No jobs yet','no-quotes':'No quotes yet','no-clients':'No clients yet','no-events':'No upcoming events','no-urgent':'No urgent items',
+    'none':'None'
+  },
+  es: {
+    'Dashboard':'Panel','Agenda':'Agenda','Quotes':'Cotizaciones','Calculator':'Calculadora',
+    'Jobs':'Proyectos','Clients':'Clientes','Finance':'Finanzas','Reminders':'Recordatorios',
+    'Reports':'Reportes','KPIs':'KPIs',
+    'd-today-lbl':'Hoy','d-urgent-lbl':'Urgente','d-jobs-lbl':'Proyectos Recientes',
+    'd-th-client':'Cliente','d-th-type':'Tipo','d-th-val':'Valor','d-th-status':'Estado',
+    'agenda-title':'Agenda y Calendario','upcoming-lbl':'Próximos Eventos',
+    'q-title':'Cotizaciones','q-saved-lbl':'Cotizaciones Guardadas',
+    'q-th-c':'Cliente','q-th-j':'Trabajo','q-th-cost':'Costo','q-th-price':'Precio','q-th-s':'Estado',
+    'calc-title':'Calculadora de Materiales','calc-type-lbl':'Tipo de Trabajo','calc-area-lbl':'Área (pies²)','calc-btn':'Calcular',
+    'j-title':'Proyectos','j-th-c':'Cliente','j-th-t':'Tipo','j-th-q':'Cotiz.','j-th-p':'Pagado','j-th-b':'Saldo','j-th-s':'Estado','j-th-st':'Inicio',
+    'cl-title':'Clientes','fin-title':'Finanzas','fin-chart-lbl':'Ingresos por Tipo','fin-inv-lbl':'Facturas Pendientes',
+    'rem-title':'Recordatorios','rem-urg-lbl':'URGENTE','rem-wk-lbl':'ESTA SEMANA','rem-fut-lbl':'PRÓXIMAMENTE',
+    'rep-title':'Reportes Mensuales','rep-yr-lbl':'Año','rep-view-lbl':'Vista','rep-mo-opt':'Mensual','rep-type-opt':'Por Tipo',
+    'kpi-title':'KPIs y Procedimientos','sop-title':'Procedimientos Estándar',
+    'status-quoted':'Cotizado','status-approved':'Aprobado','status-progress':'En Progreso','status-done':'Completado','status-invoiced':'Facturado',
+    'Save':'Guardar','Cancel':'Cancelar','Meeting':'Reunión de Cotización','Start':'Inicio de Trabajo','Followup':'Seguimiento',
+    'Active Jobs':'Trabajos Activos','Revenue YTD':'Ingresos 2026','Quotes Pending':'Cotiz. Pendientes','Outstanding':'Por Cobrar',
+    'no-jobs':'Sin proyectos','no-quotes':'Sin cotizaciones','no-clients':'Sin clientes','no-events':'Sin eventos próximos','no-urgent':'Sin urgencias',
+    'none':'Ninguno'
+  }
+};
+function tx(k) { return (TX[lang]&&TX[lang][k]) || k; }
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('on', b.textContent===l.toUpperCase()); });
+  document.querySelectorAll('[data-en]').forEach(function(el){ el.textContent = el.getAttribute('data-'+l)||el.getAttribute('data-en'); });
+  Object.keys(TX.en).forEach(function(k){ var el=document.getElementById(k); if(el) el.textContent=tx(k); });
+  renderAll();
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+function go(id, el) {
+  document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+  var p = document.getElementById('p-'+id); if(p) p.classList.add('on');
+  if(el) el.classList.add('on');
+  renderAll();
+}
+function clearForm(id) { var el=document.getElementById(id); if(el) el.innerHTML=''; }
+
+// ─── STATUS ──────────────────────────────────────────────────────────────────
+function statusBadge(s) {
+  var m = {
+    quoted:['bq','status-quoted'], approved:['ba','status-approved'],
+    progress:['bp','status-progress'], done:['bd2','status-done'], invoiced:['bi','status-invoiced']
+  };
+  var x = m[s]||['bi',s];
+  return '<span class="badge '+x[0]+'">'+tx(x[1])+'</span>';
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+function checkNotifs() {
+  var td = today();
+  var urg = DB.reminders.filter(function(r){ return !r.done && r.priority==='urgent'; });
+  var evToday = DB.events.filter(function(e){ return e.date===td; });
+  var msgs = [];
+  if(urg.length) msgs.push(urg.length + (lang==='es'?' recordatorio(s) urgente(s)':' urgent reminder(s)'));
+  if(evToday.length) msgs.push(evToday.length + (lang==='es'?' evento(s) hoy':' event(s) today'));
+  var b = document.getElementById('notif-banner');
+  var d = document.getElementById('notif-dot');
+  if(msgs.length) {
+    b.textContent = (lang==='es'?'Notificación: ':'Notification: ') + msgs.join(' | ');
+    b.classList.add('show'); d.classList.add('show');
+  } else { b.classList.remove('show'); d.classList.remove('show'); }
+}
+
+// ─── RENDER ALL ──────────────────────────────────────────────────────────────
+function renderAll() {
+  checkNotifs(); renderDash(); renderCalendar(); renderQuotes(); renderJobs();
+  renderClients(); renderFinance(); renderReminders(); renderReports(); renderKPI();
+  updateCalcFields();
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDash() {
+  var el = document.getElementById('dash-metrics'); if(!el) return;
+  var rev = DB.jobs.reduce(function(a,j){ return a+(parseFloat(j.quote)||0); },0);
+  var paid = DB.jobs.reduce(function(a,j){ return a+(parseFloat(j.paid)||0); },0);
+  var active = DB.jobs.filter(function(j){ return j.status==='progress'||j.status==='approved'; }).length;
+  var pending = DB.quotes.filter(function(q){ return q.status==='quoted'; }).length;
+  el.innerHTML =
+    '<div class="mc"><div class="mc-label">'+tx('Active Jobs')+'</div><div class="mc-val gv">'+active+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+tx('Revenue YTD')+'</div><div class="mc-val">'+fmt(rev)+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+tx('Quotes Pending')+'</div><div class="mc-val">'+pending+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+tx('Outstanding')+'</div><div class="mc-val bad">'+fmt(rev-paid)+'</div></div>';
+  var td = today();
+  var todayEvs = DB.events.filter(function(e){ return e.date===td; });
+  document.getElementById('dash-today').innerHTML = todayEvs.length ?
+    todayEvs.map(function(e){ return '<div class="rem"><div class="ev-dot '+(e.type==='meeting'?'ev-meeting':e.type==='start'?'ev-start':'ev-follow')+'"></div><div><div class="rt">'+e.title+'</div><div class="rs">'+(e.time||'')+(e.client?' · '+e.client:'')+'</div></div></div>'; }).join('') :
+    '<div class="empty" style="padding:8px">'+tx('no-events')+'</div>';
+  var urgs = DB.reminders.filter(function(r){ return !r.done && r.priority==='urgent'; }).slice(0,3);
+  document.getElementById('dash-urgent').innerHTML = urgs.length ?
+    urgs.map(function(r){ return '<div class="rem"><div class="dot dr"></div><div><div class="rt">'+r.text+'</div><div class="rs">'+(r.date||'')+'</div></div></div>'; }).join('') :
+    '<div class="empty" style="padding:8px">'+tx('no-urgent')+'</div>';
+  var rows = DB.jobs.slice(-5).reverse().map(function(j){
+    return '<tr><td>'+j.id+'</td><td>'+j.client+'</td><td>'+j.type+'</td><td>'+fmt(j.quote)+'</td><td>'+statusBadge(j.status)+'</td></tr>';
+  }).join('');
+  document.getElementById('dash-jobs').innerHTML = rows || '<tr><td colspan="5" class="empty">'+tx('no-jobs')+'</td></tr>';
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────────────
+var MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var DAYS_EN = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+var DAYS_ES = ['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+
+function renderCalendar() {
+  var el = document.getElementById('cal-body'); if(!el) return;
+  var months = lang==='es' ? MONTHS_ES : MONTHS_EN;
+  var days = lang==='es' ? DAYS_ES : DAYS_EN;
+  document.getElementById('cal-label').textContent = months[calMonth] + ' ' + calYear;
+  document.getElementById('cal-hdrs').innerHTML = days.map(function(d){ return '<div class="cal-day-hdr">'+d+'</div>'; }).join('');
+  var first = new Date(calYear, calMonth, 1).getDay();
+  var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  var daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  var td = today();
+  var cells = '';
+  for(var i=0;i<first;i++){ var d=daysInPrev-first+1+i; cells+='<div class="cal-day other-month">'+d+'</div>'; }
+  for(var d=1;d<=daysInMonth;d++){
+    var ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var evs = DB.events.filter(function(e){ return e.date===ds; });
+    var dots = evs.map(function(e){ return '<span class="cal-event-dot" style="background:'+(e.type==='meeting'?'#3498db':e.type==='start'?'#2ecc71':'#C8A800')+'"></span>'; }).join('');
+    cells += '<div class="cal-day'+(ds===td?' today':'')+(evs.length?' has-event':'')+'" onclick="showDay(\''+ds+'\')" title="'+ds+'"><div>'+d+'</div>'+dots+'</div>';
+  }
+  var rem = (7-(first+daysInMonth)%7)%7;
+  for(var i=1;i<=rem;i++) cells+='<div class="cal-day other-month">'+i+'</div>';
+  el.innerHTML = cells;
+  var upcoming = DB.events.filter(function(e){ return e.date>=td; }).sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(0,8);
+  document.getElementById('upcoming-list').innerHTML = upcoming.length ?
+    upcoming.map(function(e){
+      var cls = e.type==='meeting'?'ev-meeting':e.type==='start'?'ev-start':'ev-follow';
+      return '<div class="rem"><div class="ev-dot '+cls+'"></div><div style="flex:1"><div class="rt"><strong>'+e.date+'</strong>'+(e.time?' '+e.time:'')+' — '+e.title+'</div><div class="rs">'+tx(e.type==='meeting'?'Meeting':e.type==='start'?'Start':'Followup')+(e.client?' · '+e.client:'')+'</div></div><button class="btn btn-sm btn-danger" onclick="delEvent(\''+e.id+'\')">✕</button></div>';
+    }).join('') :
+    '<div class="empty">'+tx('no-events')+'</div>';
+}
+
+function showDay(date) {
+  var evs = DB.events.filter(function(e){ return e.date===date; });
+  if(!evs.length){ toast(lang==='es'?'Sin eventos ese día':'No events on this day'); return; }
+  alert(date+':\n'+evs.map(function(e){ return (e.time||'')+ ' ' +e.title+(e.client?' ('+e.client+')':''); }).join('\n'));
+}
+function changeMonth(dir) {
+  calMonth += dir;
+  if(calMonth>11){calMonth=0;calYear++;} else if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+function delEvent(id){ DB.events=DB.events.filter(function(e){return e.id!==id;}); saveAll(); renderCalendar(); toast(lang==='es'?'Evento eliminado':'Event deleted'); }
+
+function openNewEvent() {
+  var clients = DB.clients.map(function(c){ return '<option>'+c.name+'</option>'; }).join('');
+  document.getElementById('event-form-area').innerHTML = '<div class="modal-wrap"><div class="modal">'+
+    '<div class="modal-title">'+(lang==='es'?'Nuevo Evento':'New Event')+'</div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Título':'Title')+'</label><input id="ev-title" type="text"></div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Tipo':'Type')+'</label><select id="ev-type"><option value="meeting">'+(lang==='es'?'Reunión cotización':'Quote Meeting')+'</option><option value="start">'+(lang==='es'?'Inicio trabajo':'Job Start')+'</option><option value="follow">'+(lang==='es'?'Seguimiento':'Follow-up')+'</option></select></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Cliente':'Client')+'</label><select id="ev-client"><option value="">—</option>'+clients+'</select></div></div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Fecha':'Date')+'</label><input id="ev-date" type="date" value="'+today()+'"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Hora':'Time')+'</label><input id="ev-time" type="time"></div></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Notas':'Notes')+'</label><input id="ev-notes" type="text"></div>'+
+    '<div style="display:flex;gap:6px;margin-top:4px"><button class="btn btn-gold" onclick="saveEvent()">'+tx('Save')+'</button><button class="btn" onclick="clearForm(\'event-form-area\')">'+tx('Cancel')+'</button></div></div></div>';
+}
+function saveEvent() {
+  var title = (document.getElementById('ev-title').value||'').trim();
+  if(!title){ toast(lang==='es'?'Ingresa un título':'Enter a title','err'); return; }
+  DB.events.push({id:'E-'+String(nextE++).padStart(3,'0'),title:title,type:gv('ev-type'),client:gv('ev-client'),date:gv('ev-date'),time:gv('ev-time'),notes:gv('ev-notes')});
+  saveAll(); clearForm('event-form-area'); renderCalendar(); toast(lang==='es'?'Evento guardado':'Event saved');
+}
+
+// ─── QUOTES ──────────────────────────────────────────────────────────────────
+function openNewQuote() {
+  var clients = DB.clients.map(function(c){ return '<option>'+c.name+'</option>'; }).join('');
+  document.getElementById('quote-form-area').innerHTML = '<div class="modal-wrap"><div class="modal">'+
+    '<div class="modal-title">'+(lang==='es'?'Nueva Cotización':'New Quote')+'</div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Cliente':'Client')+'</label>'+(clients?'<select id="q-client"><option value="">—</option>'+clients+'</select>':'<input id="q-client" type="text">')+'</div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Tipo':'Type')+'</label><select id="q-type"><option>Concrete</option><option>Interlock</option><option>Retaining Wall</option><option>Excavation</option><option>Landscaping</option><option>Power Wash</option><option>Sealing</option></select></div></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Descripción del trabajo':'Scope of Work')+'</label><textarea id="q-scope"></textarea></div>'+
+    '<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Materiales ($)':'Materials ($)')+'</label><input id="q-mat" type="number" value="0" oninput="liveQ()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Días cuadrilla':'Crew Days')+'</label><input id="q-days" type="number" value="2" oninput="liveQ()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Tarifa diaria ($)':'Daily Rate ($)')+'</label><input id="q-rate" type="number" value="1200" oninput="liveQ()"></div></div>'+
+    '<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Equipo ($)':'Equipment ($)')+'</label><input id="q-equip" type="number" value="400" oninput="liveQ()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Disposición ($)':'Disposal ($)')+'</label><input id="q-disp" type="number" value="320" oninput="liveQ()"></div>'+
+    '<div class="fg"><label>Markup %</label><input id="q-markup" type="number" value="25" oninput="liveQ()"></div></div>'+
+    '<div id="q-preview" style="background:var(--dark3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin:8px 0;font-size:12px"></div>'+
+    '<div style="display:flex;gap:6px;margin-top:4px"><button class="btn btn-gold" onclick="saveQuote()">'+tx('Save')+'</button><button class="btn" onclick="clearForm(\'quote-form-area\')">'+tx('Cancel')+'</button></div></div></div>';
+  liveQ();
+}
+function liveQ() {
+  try {
+    var mat=parseFloat(document.getElementById('q-mat').value)||0;
+    var days=parseFloat(document.getElementById('q-days').value)||0;
+    var rate=parseFloat(document.getElementById('q-rate').value)||0;
+    var equip=parseFloat(document.getElementById('q-equip').value)||0;
+    var disp=parseFloat(document.getElementById('q-disp').value)||0;
+    var mu=(parseFloat(document.getElementById('q-markup').value)||25)/100;
+    var hst=mat*0.13; var cost=mat+hst+(days*rate)+equip+disp; var price=cost*(1+mu);
+    var el=document.getElementById('q-preview');
+    if(el) el.innerHTML='<div class="pr-row"><span>'+(lang==='es'?'Costo total':'Total cost')+'</span><span>'+fmt(cost)+'</span></div><div class="pr-row"><span>'+(lang==='es'?'Precio al cliente':'Client price')+'</span><span style="color:var(--gold);font-weight:600">'+fmt(price)+'</span></div><div class="pr-row"><span>'+(lang==='es'?'Ganancia':'Profit')+'</span><span class="ok">'+fmt(price-cost)+' ('+pct((price-cost)/price*100)+')</span></div>';
+    return {cost:cost, price:price, mat:mat, days:days, rate:rate, equip:equip, disp:disp, mu:mu*100};
+  } catch(e) { return {cost:0,price:0}; }
+}
+function saveQuote() {
+  var client=(gv('q-client')||'').trim(); if(!client){toast(lang==='es'?'Selecciona un cliente':'Select a client','err');return;}
+  var res=liveQ();
+  var id='Q-'+String(nextQ++).padStart(3,'0');
+  DB.quotes.push({id:id,client:client,jobType:gv('q-type'),scope:gv('q-scope'),mat:res.mat,days:res.days,rate:res.rate,equip:res.equip,disp:res.disp,markup:res.mu,cost:res.cost.toFixed(2),price:res.price.toFixed(2),status:'quoted',date:today()});
+  saveAll(); clearForm('quote-form-area'); renderQuotes(); toast((lang==='es'?'Cotización guardada: ':'Quote saved: ')+id);
+}
+function renderQuotes() {
+  var el=document.getElementById('quotes-body'); if(!el)return;
+  el.innerHTML=DB.quotes.map(function(q){
+    return '<tr><td>'+q.id+'</td><td>'+q.client+'</td><td>'+q.jobType+'</td><td>'+fmt(q.cost)+'</td><td style="color:var(--gold)">'+fmt(q.price)+'</td><td>'+statusBadge(q.status)+'</td><td><button class="btn btn-sm" style="color:var(--gold);border-color:var(--border2)" onclick="showPDF(\''+q.id+'\')">PDF</button></td></tr>';
+  }).join('')||'<tr><td colspan="7" class="empty">'+tx('no-quotes')+'</td></tr>';
+}
+function showPDF(qid) {
+  var q=DB.quotes.find(function(x){return x.id===qid;}); if(!q)return;
+  var s = DB.settings || DEFAULT_SETTINGS;
+  var compName = s.name || 'Golden Hill Construction & Landscaping';
+  var compPhone = s.phone || '416 951 0306';
+  var compEmail = s.email || 'info@goldenhillconstruction.ca';
+  var compWeb = s.website || 'goldentrackpro.ca';
+  var terms = lang==='es' ? (s.termsEs||DEFAULT_SETTINGS.termsEs) : (s.termsEn||DEFAULT_SETTINGS.termsEn);
+  var deposit = s.deposit || 50;
+  var mat=parseFloat(q.mat)||0; var hst=mat*(s.hst||13)/100; var labour=(q.days||0)*(q.rate||0);
+  var logoHtml = s.logo ?
+    '<img src="'+s.logo+'" style="height:52px;max-width:120px;object-fit:contain" alt="logo">' :
+    '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:15px;color:var(--gold);letter-spacing:-0.5px">'+compName.toUpperCase()+'</div>';
+  document.getElementById('pdf-area').innerHTML='<div class="pdf-quote">'+
+    '<div class="pdf-header">'+
+    '<div style="display:flex;align-items:center;gap:10px">'+logoHtml+
+    '<div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:13px">'+compName+'</div><div style="font-size:10px;color:var(--text3)">'+compWeb+'</div></div></div>'+
+    '<div style="text-align:right"><div style="font-size:11px;color:var(--text2)">'+compPhone+'</div><div style="font-size:11px;color:var(--text2)">'+compEmail+'</div><div style="font-size:10px;color:var(--text3)">'+( s.addr||'')+'</div></div></div>'+
+    '<div class="pdf-body">'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:14px;font-size:12px"><div><div style="font-family:\'Syne\',sans-serif;font-weight:700;margin-bottom:2px">'+q.client+'</div><div style="color:var(--text3)">'+q.jobType+'</div></div><div style="text-align:right"><div style="font-size:10px;color:var(--text3)">'+(lang==='es'?'Cotización':'Quote No.')+' '+q.id+'</div><div style="font-size:10px;color:var(--text3)">'+(lang==='es'?'Fecha':'Date')+': '+q.date+'</div><div style="font-size:10px;color:var(--text3)">'+(lang==='es'?'Válido':'Valid')+': '+(s.validDays||30)+' '+(lang==='es'?'días':'days')+'</div></div></div>'+
+    (q.scope?'<div style="font-size:11px;color:var(--text2);background:var(--dark3);border:1px solid var(--border);border-radius:var(--r);padding:8px;margin-bottom:12px">'+q.scope+'</div>':'')+
+    '<table style="width:100%;font-size:12px;border-collapse:collapse">'+
+    '<thead><tr><th style="text-align:left;padding:5px 0;border-bottom:1px solid var(--border);font-family:\'Syne\',sans-serif;font-size:10px;color:var(--text3);letter-spacing:0.4px;text-transform:uppercase">'+(lang==='es'?'Descripción':'Description')+'</th><th style="text-align:right;padding:5px 0;border-bottom:1px solid var(--border);font-family:\'Syne\',sans-serif;font-size:10px;color:var(--text3);letter-spacing:0.4px;text-transform:uppercase">'+(lang==='es'?'Monto':'Amount')+'</th></tr></thead>'+
+    '<tbody>'+
+    '<tr><td style="padding:5px 0;border-bottom:1px solid var(--border)">'+(lang==='es'?'Materiales':'Materials')+'</td><td style="text-align:right;padding:5px 0;border-bottom:1px solid var(--border)">'+fmt(mat)+'</td></tr>'+
+    '<tr><td style="padding:5px 0;border-bottom:1px solid var(--border)">HST ('+(s.hst||13)+'%)</td><td style="text-align:right;padding:5px 0;border-bottom:1px solid var(--border)">'+fmt(hst)+'</td></tr>'+
+    '<tr><td style="padding:5px 0;border-bottom:1px solid var(--border)">'+(lang==='es'?'Mano de obra ('+q.days+' días)':'Labour ('+q.days+' days)')+'</td><td style="text-align:right;padding:5px 0;border-bottom:1px solid var(--border)">'+fmt(labour)+'</td></tr>'+
+    '<tr><td style="padding:5px 0;border-bottom:1px solid var(--border)">'+(lang==='es'?'Equipo':'Equipment')+'</td><td style="text-align:right;padding:5px 0;border-bottom:1px solid var(--border)">'+fmt(q.equip)+'</td></tr>'+
+    '<tr><td style="padding:5px 0">'+(lang==='es'?'Disposición / Limpieza':'Disposal / Cleanup')+'</td><td style="text-align:right;padding:5px 0">'+fmt(q.disp)+'</td></tr>'+
+    '</tbody></table></div>'+
+    '<div class="pdf-total"><div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:13px">TOTAL</div><div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:20px;color:var(--gold)">'+fmt(q.price)+'</div></div>'+
+    '<div style="padding:10px 18px;font-size:10px;color:var(--text3);border-top:1px solid var(--border)">'+terms.replace(/\n/g,'<br>')+'</div></div>'+
+    '<div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-gold" onclick="window.print()">'+(lang==='es'?'Imprimir / Guardar PDF':'Print / Save PDF')+'</button><button class="btn" onclick="clearForm(\'pdf-area\')">'+tx('Cancel')+'</button></div>';
+}
+
+
+// ─── CALCULATOR ──────────────────────────────────────────────────────────────
+function updateCalcFields() {
+  var type = gv('calc-type');
+  var html = '';
+  if(type==='concrete') {
+    html='<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Profundidad (pulg)':'Depth (inches)')+'</label><input type="number" id="cd-depth" value="4" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Spec de concreto':'Concrete spec')+'</label><select id="cd-spec" onchange="calcMats()"><option value="137">25 MPa — $137/m³</option><option value="140">25 MPa AE — $140/m³</option><option value="162" selected>32 MPa C2 AE — $162/m³</option><option value="170">35 MPa C1 AE — $170/m³</option><option value="220">Mr. Bin C25 — $220/m³</option><option value="230">Mr. Bin C32 — $230/m³</option></select></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Base gravel (pulg)':'Gravel base (in)')+'</label><input type="number" id="cd-base" value="4" oninput="calcMats()"></div></div>';
+  } else if(type==='interlock') {
+    html='<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Base compactada (pulg)':'Compact base (in)')+'</label><input type="number" id="cd-base" value="8" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Arena cama (pulg)':'Bedding sand (in)')+'</label><input type="number" id="cd-sand" value="1" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Precio pavers ($/sqft)':'Paver price ($/sqft)')+'</label><input type="number" id="cd-paver" value="4.50" oninput="calcMats()"></div></div>';
+  } else if(type==='retaining') {
+    html='<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Longitud (pies)':'Length (ft)')+'</label><input type="number" id="cd-lf" value="20" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Altura (pies)':'Height (ft)')+'</label><input type="number" id="cd-ht" value="3" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Precio bloque ($/u)':'Block price ($/ea)')+'</label><input type="number" id="cd-block" value="8" oninput="calcMats()"></div></div>';
+  } else if(type==='excavation') {
+    html='<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Prof. excavación (pulg)':'Excav depth (in)')+'</label><input type="number" id="cd-depth" value="12" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Costo por carga ($)':'Cost per load ($)')+'</label><input type="number" id="cd-load" value="320" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Hrs excavadora':'Excavator hrs')+'</label><input type="number" id="cd-hrs" value="4" oninput="calcMats()"></div></div>';
+  } else if(type==='powerwash') {
+    html='<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Precio/sqft ($)':'Rate/sqft ($)')+'</label><input type="number" id="cd-rate" value="0.25" oninput="calcMats()"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Sellado incluido?':'Sealing included?')+'</label><select id="cd-seal" onchange="calcMats()"><option value="0">No</option><option value="0.15">Yes (+$0.15/sqft)</option></select></div></div>';
+  }
+  document.getElementById('calc-fields').innerHTML = html;
+  calcMats();
+}
+function calcMats() {
+  var type=gv('calc-type'); var area=g('calc-area');
+  if(!area){ document.getElementById('calc-result').innerHTML=''; return; }
+  var sqm=area*0.0929; var rows=[]; var total=0;
+  function addRow(label,qty,unit,price){ var cost=qty*price; total+=cost; rows.push({label:label,qty:qty.toFixed(2),unit:unit,price:price,cost:cost}); }
+  if(type==='concrete'){
+    var dep=g('cd-depth')||4; var spec=g('cd-spec')||162; var base=g('cd-base')||4;
+    var m3=sqm*(dep*0.0254)*1.07;
+    addRow(lang==='es'?'Concreto (7% desperdicio)':'Concrete (7% waste)',m3,'m³',spec);
+    addRow(lang==='es'?'Base gravel Cr/Run':'Gravel base Cr/Run',sqm*(base*0.0254)*1.6*1.05,'ton',25);
+    addRow(lang==='es'?'Formulario / tarimas':'Forming / lumber',1,'set',area*0.15);
+    if(m3<1.5) rows.push({label:lang==='es'?'⚠ Proveedor: Mr. Bin (vaciado < 1.5m³)':'⚠ Supplier: Mr. Bin (pour < 1.5m³)',note:true});
+    else rows.push({label:lang==='es'?'⚠ Proveedor: Forest Ready-Mix (vaciado ≥ 1.5m³)':'⚠ Supplier: Forest Ready-Mix (pour ≥ 1.5m³)',note:true});
+  } else if(type==='interlock'){
+    var base=g('cd-base')||8; var sand=g('cd-sand')||1; var paver=g('cd-paver')||4.5;
+    addRow(lang==='es'?'Base compactada Cr/Run':'Compacted base Cr/Run',sqm*(base*0.0254)*2.0*1.10,'ton',25);
+    addRow(lang==='es'?'Arena de cama (chips)':'Bedding sand (chips)',sqm*(sand*0.0254)*1.5*1.05,'ton',28);
+    addRow(lang==='es'?'Pavers (7% corte)':'Pavers (7% cuts)',area*1.07,'sqft',paver);
+    addRow('Alliance Supersand',Math.ceil(area/80),'bags',23.99);
+    addRow('Geotextile fabric',area,'sqft',0.12);
+  } else if(type==='retaining'){
+    var lf=g('cd-lf')||20; var ht=g('cd-ht')||3; var bp=g('cd-block')||8;
+    var sf=lf*ht;
+    addRow(lang==='es'?'Bloques muro (10% extra)':'Wall blocks (10% extra)',Math.ceil(sf*1.1),'units',bp);
+    addRow(lang==='es'?'Drenaje clear limestone':'Drainage clear limestone',Math.ceil(lf*0.5),'ton',32);
+    addRow('Geotextile fabric',sf,'sqft',0.12);
+    addRow('Alliance XP Bond adhesive',Math.ceil(lf/10),'tubes',19.50);
+  } else if(type==='excavation'){
+    var dep=g('cd-depth')||12; var load=g('cd-load')||320; var hrs=g('cd-hrs')||4;
+    var loads=Math.ceil(sqm*(dep*0.0254)/6);
+    addRow(lang==='es'?'Cargas de disposición':'Disposal loads',loads,'loads',load);
+    addRow(lang==='es'?'Excavadora (hrs)':'Excavator (hrs)',hrs,'hrs',150);
+    addRow(lang==='es'?'Combustible estimado':'Fuel estimate',hrs*5,'L',2.20);
+  } else if(type==='powerwash'){
+    var rate=g('cd-rate')||0.25; var seal=g('cd-seal')||0;
+    addRow(lang==='es'?'Lavado a presión':'Power washing',area,'sqft',rate);
+    if(seal>0) addRow(lang==='es'?'Sellador':'Sealer',area,'sqft',seal);
+    addRow(lang==='es'?'Químicos/detergente':'Chemicals/detergent',1,'set',area*0.02);
+  }
+  var hst=total*0.13; var mu=(DB.settings.markup||25)/100;
+  var withHst=total+hst; var price=withHst*(1+mu); var profit=price-withHst;
+  document.getElementById('calc-result').innerHTML='<div class="calc-result">'+
+    '<div style="font-size:10px;font-family:\'Syne\',sans-serif;font-weight:800;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin-bottom:8px">'+(lang==='es'?'DESGLOSE DE MATERIALES':'MATERIAL BREAKDOWN')+'</div>'+
+    rows.map(function(r){
+      if(r.note) return '<div style="font-size:11px;color:var(--gold);padding:4px 0;border-bottom:1px solid var(--border)">'+r.label+'</div>';
+      return '<div class="calc-row"><span>'+r.label+'</span><span style="color:var(--text2)">'+r.qty+' '+r.unit+' × '+fmt(r.price)+' = <strong style="color:var(--text)">'+fmt(r.cost)+'</strong></span></div>';
+    }).join('')+
+    '<div class="calc-row"><span>HST (13%)</span><span>'+fmt(hst)+'</span></div>'+
+    '<div class="calc-row"><span><strong>'+(lang==='es'?'Total materiales+HST':'Total materials+HST')+'</strong></span><span><strong>'+fmt(withHst)+'</strong></span></div>'+
+    '<div class="calc-total"><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:12px">'+(lang==='es'?'Precio al cliente ('+Math.round(DB.settings.markup||25)+'% markup)':'Client price ('+(DB.settings.markup||25)+'% markup)')+'</div><div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:18px;color:var(--gold)">'+fmt(price)+'</div></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px"><span>'+(lang==='es'?'Tu ganancia estimada':'Est. profit')+'</span><span class="ok">'+fmt(profit)+' ('+pct(profit/price*100)+')</span></div>'+
+    '</div>';
+}
+
+// ─── JOBS ────────────────────────────────────────────────────────────────────
+function openNewJob() {
+  var clients=DB.clients.map(function(c){return '<option>'+c.name+'</option>';}).join('');
+  document.getElementById('job-form-area').innerHTML='<div class="modal-wrap"><div class="modal">'+
+    '<div class="modal-title">'+(lang==='es'?'Nuevo Proyecto':'New Job')+'</div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Cliente':'Client')+'</label>'+(clients?'<select id="jf-client"><option value="">—</option>'+clients+'</select>':'<input id="jf-client" type="text">')+'</div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Tipo':'Type')+'</label><select id="jf-type"><option>Concrete</option><option>Interlock</option><option>Retaining Wall</option><option>Excavation</option><option>Landscaping</option><option>Power Wash</option><option>Sealing</option></select></div></div>'+
+    '<div class="fr3"><div class="fg"><label>'+(lang==='es'?'Monto cotizado ($)':'Quote ($)')+'</label><input id="jf-quote" type="number" value="0"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Depósito recibido ($)':'Deposit paid ($)')+'</label><input id="jf-paid" type="number" value="0"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Estado':'Status')+'</label><select id="jf-status"><option value="quoted">'+(lang==='es'?'Cotizado':'Quoted')+'</option><option value="approved">'+(lang==='es'?'Aprobado':'Approved')+'</option><option value="progress">'+(lang==='es'?'En Progreso':'In Progress')+'</option><option value="done">'+(lang==='es'?'Completado':'Done')+'</option><option value="invoiced">'+(lang==='es'?'Facturado':'Invoiced')+'</option></select></div></div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Fecha de inicio del trabajo':'Job start date')+'</label><input id="jf-start" type="date"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Fecha de seguimiento':'Follow-up date')+'</label><input id="jf-fup" type="date"></div></div>'+
+    '<div style="display:flex;gap:6px;margin-top:4px"><button class="btn btn-gold" onclick="saveJob()">'+tx('Save')+'</button><button class="btn" onclick="clearForm(\'job-form-area\')">'+tx('Cancel')+'</button></div></div></div>';
+}
+function saveJob() {
+  var client=(gv('jf-client')||'').trim(); if(!client){toast(lang==='es'?'Selecciona un cliente':'Select a client','err');return;}
+  var startDate=gv('jf-start');
+  var id='J-'+String(nextJ++).padStart(3,'0');
+  DB.jobs.push({id:id,client:client,type:gv('jf-type'),quote:parseFloat(document.getElementById('jf-quote').value)||0,paid:parseFloat(document.getElementById('jf-paid').value)||0,status:gv('jf-status'),start:startDate,followup:gv('jf-fup'),date:today()});
+  if(startDate){ DB.events.push({id:'E-'+String(nextE++).padStart(3,'0'),title:(lang==='es'?'Inicio: ':'Start: ')+gv('jf-type')+' — '+client,type:'start',client:client,date:startDate,time:'',notes:id}); }
+  saveAll(); clearForm('job-form-area'); renderAll(); toast((lang==='es'?'Proyecto guardado: ':'Job saved: ')+id);
+}
+function renderJobs() {
+  var el=document.getElementById('jobs-body'); if(!el)return;
+  el.innerHTML=DB.jobs.map(function(j){
+    var bal=(parseFloat(j.quote)||0)-(parseFloat(j.paid)||0);
+    return '<tr><td>'+j.id+'</td><td>'+j.client+'</td><td>'+j.type+'</td><td>'+fmt(j.quote)+'</td><td>'+fmt(j.paid)+'</td><td class="'+(bal>0?'bad':'ok')+'">'+fmt(bal)+'</td><td>'+statusBadge(j.status)+'</td><td style="color:var(--text3);font-size:10px">'+(j.start||'—')+'</td></tr>';
+  }).join('')||'<tr><td colspan="8" class="empty">'+tx('no-jobs')+'</td></tr>';
+}
+
+// ─── CLIENTS ─────────────────────────────────────────────────────────────────
+function openNewClient() {
+  document.getElementById('client-form-area').innerHTML='<div class="modal-wrap"><div class="modal">'+
+    '<div class="modal-title">'+(lang==='es'?'Agregar Cliente':'Add Client')+'</div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Nombre completo':'Full Name')+'</label><input id="cf-name" type="text"></div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Teléfono':'Phone')+'</label><input id="cf-phone" type="text"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Zona / Ciudad':'Area / City')+'</label><input id="cf-area" type="text"></div></div>'+
+    '<div class="fg"><label>Email</label><input id="cf-email" type="email"></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Cómo nos encontró':'How they found us')+'</label><select id="cf-src"><option>Referral</option><option>Google</option><option>Instagram</option><option>Flyer</option><option>Repeat client</option><option>Other</option></select></div>'+
+    '<div style="display:flex;gap:6px;margin-top:4px"><button class="btn btn-gold" onclick="saveClient()">'+tx('Save')+'</button><button class="btn" onclick="clearForm(\'client-form-area\')">'+tx('Cancel')+'</button></div></div></div>';
+}
+function saveClient() {
+  var name=(document.getElementById('cf-name').value||'').trim(); if(!name){toast(lang==='es'?'Ingresa el nombre':'Enter name','err');return;}
+  DB.clients.push({id:'C-'+String(nextC++).padStart(3,'0'),name:name,phone:gv('cf-phone'),area:gv('cf-area'),email:gv('cf-email'),source:gv('cf-src')});
+  saveAll(); clearForm('client-form-area'); renderClients(); toast(lang==='es'?'Cliente guardado':'Client saved');
+}
+function renderClients() {
+  var el=document.getElementById('clients-grid'); if(!el)return;
+  if(!DB.clients.length){el.innerHTML='<div class="empty">'+tx('no-clients')+'</div>';return;}
+  var colors=[['#3498db','rgba(52,152,219,0.15)'],['#C8A800','rgba(200,168,0,0.12)'],['#2ecc71','rgba(46,204,113,0.12)'],['#e74c3c','rgba(231,76,60,0.12)']];
+  el.innerHTML=DB.clients.map(function(c,i){
+    var ini=(c.name||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+    var jobs=DB.jobs.filter(function(j){return j.client===c.name;});
+    var total=jobs.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);
+    var col=colors[i%4];
+    return '<div class="card" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="av" style="background:'+col[1]+';color:'+col[0]+';border:1px solid '+col[0]+'33">'+ini+'</div><div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:13px">'+c.name+'</div><div style="font-size:10px;color:var(--text3)">'+jobs.length+' '+(lang==='es'?'trabajos':'jobs')+' · '+fmt(total)+'</div></div></div><div style="font-size:11px;color:var(--text3)">'+c.phone+'</div><div style="font-size:11px;color:var(--text3)">'+c.area+(c.source?' · '+c.source:'')+'</div></div>';
+  }).join('');
+}
+
+// ─── FINANCE ─────────────────────────────────────────────────────────────────
+function renderFinance() {
+  var el=document.getElementById('fin-metrics'); if(!el)return;
+  var rev=DB.jobs.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);
+  var paid=DB.jobs.reduce(function(a,j){return a+(parseFloat(j.paid)||0);},0);
+  el.innerHTML='<div class="mc"><div class="mc-label">'+(lang==='es'?'Ingresos YTD':'Revenue YTD')+'</div><div class="mc-val">'+fmt(rev)+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+(lang==='es'?'Cobrado':'Collected')+'</div><div class="mc-val ok">'+fmt(paid)+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+(lang==='es'?'Ganancia est. (30%)':'Est. Profit (30%)')+'</div><div class="mc-val ok">'+fmt(rev*0.30)+'</div></div>'+
+    '<div class="mc"><div class="mc-label">'+(lang==='es'?'Por cobrar':'Outstanding')+'</div><div class="mc-val bad">'+fmt(rev-paid)+'</div></div>';
+  var types=['Concrete','Interlock','Retaining Wall','Excavation','Landscaping','Power Wash','Sealing'];
+  var typeRev={}; DB.jobs.forEach(function(j){var t=j.type||'Other';typeRev[t]=(typeRev[t]||0)+(parseFloat(j.quote)||0);});
+  document.getElementById('fin-chart').innerHTML=types.map(function(t){
+    var v=typeRev[t]||0; if(!v)return'';
+    var p=rev>0?Math.round(v/rev*100):0;
+    return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>'+t+'</span><span style="color:var(--text2)">'+fmt(v)+' ('+p+'%)</span></div><div class="pb"><div class="pf" style="width:'+p+'%"></div></div></div>';
+  }).join('')||'<div class="empty">'+(lang==='es'?'Sin datos':'No data')+'</div>';
+  var out=DB.jobs.filter(function(j){return (parseFloat(j.quote)||0)-(parseFloat(j.paid)||0)>0&&j.status!=='quoted';});
+  document.getElementById('fin-inv').innerHTML=out.map(function(j){
+    var bal=(parseFloat(j.quote)||0)-(parseFloat(j.paid)||0);
+    return '<tr><td>'+j.id+'</td><td>'+j.client+'</td><td class="bad">'+fmt(bal)+'</td><td style="color:var(--text3);font-size:10px">'+(j.start||'—')+'</td><td>'+statusBadge(j.status)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" class="empty">'+(lang==='es'?'Sin facturas pendientes':'No outstanding invoices')+'</td></tr>';
+}
+
+// ─── REMINDERS ───────────────────────────────────────────────────────────────
+function openNewRem() {
+  document.getElementById('rem-form-area').innerHTML='<div class="modal-wrap"><div class="modal">'+
+    '<div class="modal-title">'+(lang==='es'?'Nuevo Recordatorio':'New Reminder')+'</div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Descripción':'Description')+'</label><textarea id="rf-text"></textarea></div>'+
+    '<div class="fr2"><div class="fg"><label>'+(lang==='es'?'Prioridad':'Priority')+'</label><select id="rf-pri"><option value="urgent">'+(lang==='es'?'Urgente':'Urgent')+'</option><option value="week">'+(lang==='es'?'Esta semana':'This week')+'</option><option value="future">'+(lang==='es'?'Próximo':'Upcoming')+'</option></select></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Fecha':'Date')+'</label><input id="rf-date" type="date"></div></div>'+
+    '<div class="fg"><label>'+(lang==='es'?'Proyecto relacionado':'Related job')+'</label><input id="rf-job" type="text" placeholder="e.g. J-001"></div>'+
+    '<div style="display:flex;gap:6px;margin-top:4px"><button class="btn btn-gold" onclick="saveRem()">'+tx('Save')+'</button><button class="btn" onclick="clearForm(\'rem-form-area\')">'+tx('Cancel')+'</button></div></div></div>';
+}
+function saveRem() {
+  var text=(document.getElementById('rf-text').value||'').trim(); if(!text){toast(lang==='es'?'Ingresa descripción':'Enter description','err');return;}
+  DB.reminders.push({id:'R-'+String(nextR++).padStart(3,'0'),text:text,priority:gv('rf-pri'),date:gv('rf-date'),job:gv('rf-job'),done:false});
+  saveAll(); clearForm('rem-form-area'); renderReminders(); toast(lang==='es'?'Recordatorio guardado':'Reminder saved');
+}
+function markDone(id) { var r=DB.reminders.find(function(x){return x.id===id;}); if(r){r.done=true;saveAll();renderAll();toast(lang==='es'?'Marcado como listo':'Marked done');} }
+function renderReminders() {
+  var el=document.getElementById('rem-urg'); if(!el)return;
+  var urg=DB.reminders.filter(function(r){return !r.done&&r.priority==='urgent';});
+  var wk=DB.reminders.filter(function(r){return !r.done&&r.priority==='week';});
+  var fut=DB.reminders.filter(function(r){return !r.done&&r.priority==='future';});
+  function rHtml(arr,cls){
+    return arr.map(function(r){
+      return '<div class="rem"><div class="dot '+cls+'"></div><div style="flex:1"><div class="rt">'+r.text+'</div><div class="rs">'+(r.date||'')+(r.job?' · '+r.job:'')+'</div></div><button class="btn btn-sm" onclick="markDone(\''+r.id+'\')">'+(lang==='es'?'Listo':'Done')+'</button></div>';
+    }).join('')||'<div class="empty" style="padding:6px">'+tx('none')+'</div>';
+  }
+  document.getElementById('rem-urg').innerHTML=rHtml(urg,'dr');
+  document.getElementById('rem-wk').innerHTML=rHtml(wk,'dg');
+  document.getElementById('rem-fut').innerHTML=rHtml(fut,'dge');
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+function renderReports() {
+  var el=document.getElementById('reports-content'); if(!el)return;
+  var year=parseInt(document.getElementById('rep-year').value)||2026;
+  var view=gv('rep-view');
+  var jobs=DB.jobs.filter(function(j){return (j.date||'').startsWith(''+year);});
+  if(view==='monthly'){
+    var mos=lang==='es'?['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var data=mos.map(function(m,i){
+      var mon=String(i+1).padStart(2,'0');
+      var mj=jobs.filter(function(j){return (j.date||'').substring(5,7)===mon;});
+      var rev=mj.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);
+      var pd=mj.reduce(function(a,j){return a+(parseFloat(j.paid)||0);},0);
+      return{month:m,jobs:mj.length,rev:rev,paid:pd};
+    });
+    var maxRev=Math.max.apply(null,data.map(function(d){return d.rev;}))||1;
+    el.innerHTML=data.map(function(d){
+      if(!d.rev&&!d.jobs)return'';
+      return '<div class="month-card"><div class="month-hdr"><span>'+d.month+'</span><span style="color:var(--gold)">'+fmt(d.rev)+'</span></div>'+
+        '<div class="pb" style="margin-bottom:5px"><div class="pf" style="width:'+Math.round(d.rev/maxRev*100)+'%"></div></div>'+
+        '<div style="display:flex;gap:12px;font-size:10px;color:var(--text3)"><span>'+d.jobs+' '+(lang==='es'?'trabajos':'jobs')+'</span><span>'+(lang==='es'?'Pagado: ':'Paid: ')+fmt(d.paid)+'</span><span>'+(lang==='es'?'Gan. est: ':'Est. profit: ')+fmt(d.rev*0.30)+'</span></div></div>';
+    }).join('')||'<div class="empty">'+(lang==='es'?'Sin datos para '+year:'No data for '+year)+'</div>';
+  } else {
+    var types=['Concrete','Interlock','Retaining Wall','Excavation','Landscaping','Power Wash','Sealing'];
+    var total=jobs.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);
+    el.innerHTML='<div class="card"><div class="tw"><table style="table-layout:auto"><thead><tr>'+
+      '<th>'+(lang==='es'?'Tipo':'Type')+'</th><th>'+(lang==='es'?'Trabajos':'Jobs')+'</th><th>'+(lang==='es'?'Ingresos':'Revenue')+'</th><th>%</th><th>'+(lang==='es'?'Ganancia est.':'Est. profit')+'</th></tr></thead><tbody>'+
+      types.map(function(t){var tj=jobs.filter(function(j){return j.type===t;});var r=tj.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);if(!r)return'';var p=total>0?Math.round(r/total*100):0;return'<tr><td>'+t+'</td><td>'+tj.length+'</td><td>'+fmt(r)+'</td><td>'+p+'%</td><td class="ok">'+fmt(r*0.30)+'</td></tr>';}).join('')+
+      '<tr style="border-top:1px solid var(--border2)"><td><strong>Total</strong></td><td><strong>'+jobs.length+'</strong></td><td><strong>'+fmt(total)+'</strong></td><td>100%</td><td class="ok"><strong>'+fmt(total*0.30)+'</strong></td></tr>'+
+      '</tbody></table></div></div>';
+  }
+}
+
+// ─── KPI ─────────────────────────────────────────────────────────────────────
+function renderKPI() {
+  var el=document.getElementById('kpi-grid'); if(!el)return;
+  var rev=DB.jobs.reduce(function(a,j){return a+(parseFloat(j.quote)||0);},0);
+  var avg=DB.jobs.length?Math.round(rev/DB.jobs.length):0;
+  var done=DB.jobs.filter(function(j){return j.status==='done';}).length;
+  var conv=DB.quotes.length?Math.round((DB.jobs.length/DB.quotes.length)*100):0;
+  var target=300000;
+  var kpis=[
+    {n:lang==='es'?'Tasa de conversión':'Quote conversion',v:conv+'%',t:'Target: 70%',p:conv},
+    {n:lang==='es'?'Valor promedio':'Avg job value',v:fmt(avg),t:'Target: $10K',p:Math.min(100,Math.round(avg/100))},
+    {n:lang==='es'?'Trabajos completados':'Jobs completed',v:done+'/'+DB.jobs.length,t:lang==='es'?'Del total':'Of total',p:DB.jobs.length?Math.round(done/DB.jobs.length*100):0},
+    {n:lang==='es'?'Meta anual ($300K)':'Annual target ($300K)',v:fmt(rev),t:pct(Math.min(100,Math.round(rev/target*100)))+' '+(lang==='es'?'alcanzado':'achieved'),p:Math.min(100,Math.round(rev/target*100))},
+    {n:lang==='es'?'Total clientes':'Total clients',v:DB.clients.length,t:lang==='es'?'Registrados':'Registered',p:Math.min(100,DB.clients.length*10)},
+    {n:lang==='es'?'Recordatorios activos':'Active reminders',v:DB.reminders.filter(function(r){return !r.done;}).length,t:lang==='es'?'Pendientes':'Pending',p:0},
+  ];
+  el.innerHTML=kpis.map(function(k){
+    return '<div class="kc"><div class="kn">'+k.n+'</div><div class="kv gv">'+k.v+'</div><div class="kt">'+k.t+'</div><div class="pb"><div class="pf" style="width:'+k.p+'%"></div></div></div>';
+  }).join('');
+  var sops=lang==='es'?[
+    'Nuevo prospecto → visita en 24hrs → cotización en 48hrs',
+    'Seguimiento a cotizaciones sin respuesta cada 3 días (máx 3 intentos)',
+    'Cobrar 50% de depósito antes de iniciar — sin excepciones',
+    'Factura final el mismo día que se completa el trabajo',
+    'Fotos: antes, durante y después de cada trabajo',
+    'Materiales ordenados mínimo 2 días antes de iniciar',
+    'Markup mínimo 20% en todos los proyectos',
+    'Agendar reunión de cotización antes de dar precio'
+  ]:[
+    'New lead → site visit 24hrs → quote within 48hrs',
+    'Follow up unanswered quotes every 3 days (max 3 attempts)',
+    'Collect 50% deposit before any job starts — no exceptions',
+    'Send invoice same day job is completed',
+    'Photo documentation: before, during, and after every job',
+    'Order materials minimum 2 days before job start',
+    'Minimum 20% markup on all jobs',
+    'Schedule quote meeting before giving price'
+  ];
+  document.getElementById('sop-list').innerHTML=sops.map(function(s){return '<div class="rem"><div class="dot dge"></div><div class="rt">'+s+'</div></div>';}).join('');
+}
+
+// ─── LOGO ─────────────────────────────────────────────────────────────────────
+function handleLogoUpload(input) {
+  var file = input.files[0]; if(!file) return;
+  if(file.size > 2*1024*1024){ toast(lang==='es'?'Logo muy grande. Máximo 2MB':'Logo too large. Max 2MB','err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    DB.settings.logo = e.target.result;
+    saveAll();
+    applyLogo(e.target.result);
+    updateTopbarLogo();
+    toast(lang==='es'?'Logo guardado':'Logo saved');
+  };
+  reader.readAsDataURL(file);
+}
+function applyLogo(src) {
+  var img = document.getElementById('logo-preview-img');
+  var ph = document.getElementById('logo-placeholder-txt');
+  if(img && src){ img.src=src; img.style.display='block'; if(ph) ph.style.display='none'; }
+  else if(img){ img.style.display='none'; if(ph) ph.style.display='block'; }
+}
+function removeLogo() {
+  DB.settings.logo = '';
+  saveAll();
+  applyLogo('');
+  updateTopbarLogo();
+  var inp = document.getElementById('logo-upload'); if(inp) inp.value='';
+  toast(lang==='es'?'Logo eliminado':'Logo removed');
+}
+function updateTopbarLogo() {
+  var logo = DB.settings && DB.settings.logo;
+  var mark = document.getElementById('brand-mark');
+  if(!mark) return;
+  if(logo) {
+    mark.innerHTML = '<img src="'+logo+'" style="width:100%;height:100%;object-fit:contain;border-radius:5px" alt="logo">';
+    mark.style.background = 'transparent';
+    mark.style.padding = '2px';
+  } else {
+    mark.innerHTML = 'GT';
+    mark.style.background = '#C8A800';
+    mark.style.padding = '0';
+  }
+}
+
+
+var DEFAULT_SETTINGS = {
+  // Company
+  name:'Golden Hill Construction & Landscaping', phone:'416 951 0306',
+  email:'info@goldenhillconstruction.ca', website:'goldenhillconstruction.ca',
+  ig:'@goldenhill_construction', addr:'York, ON',
+  // Labour
+  crewLeader:500, leadHand:400, helper:300, crewSize:3, dailyRate:1200,
+  // Concrete prices
+  p25mpa:137, p25ae:140, p32mpa:162, p35mpa:170, pMrBin25:220, pMrBin32:230,
+  // Aggregates
+  pCrRun:25, pClear:32, pChips:28, pCrushConc:9, pCleanCrush:14, pCrushAsp:6,
+  // Supplies
+  pPolySand:23.99, pAdhesive:19.50, pGeo:0.12,
+  // Equipment
+  eExcavator:150, eSkid:100, ePlate:25, eDefault:400, eFuel:2.20,
+  // Disposal
+  dLoad:320, dTruck:150, dOverhead:200,
+  // Pricing
+  markup:25, hst:13, minMarkup:20, deposit:50, validDays:30,
+  // Terms
+  termsEn:'• 50% deposit required to start\n• Balance due on completion\n• Valid for 30 days\n• Prices in CAD incl. HST as itemized\n• All work guaranteed for 1 year',
+  termsEs:'• Depósito del 50% requerido para iniciar\n• Saldo al completar el trabajo\n• Válido por 30 días\n• Precios en CAD + HST incluido\n• Todos los trabajos con garantía de 1 año',
+  // Goals
+  revenueTarget:300000, avgJobTarget:10000, convTarget:70
+};
+
+function loadSettingsForm() {
+  var s = DB.settings || DEFAULT_SETTINGS;
+  if(s.logo) applyLogo(s.logo);
+  function sv(id, key) { var el=document.getElementById(id); if(el&&s[key]!==undefined) el.value=s[key]; }
+  sv('set-name','name'); sv('set-phone','phone'); sv('set-email','email');
+  sv('set-website','website'); sv('set-ig','ig'); sv('set-addr','addr');
+  sv('set-crew-leader','crewLeader'); sv('set-lead-hand','leadHand'); sv('set-helper','helper');
+  sv('set-crew-size','crewSize'); sv('set-daily-rate','dailyRate');
+  sv('sp-25mpa','p25mpa'); sv('sp-25ae','p25ae'); sv('sp-32mpa','p32mpa');
+  sv('sp-35mpa','p35mpa'); sv('sp-mrbin25','pMrBin25'); sv('sp-mrbin32','pMrBin32');
+  sv('sp-crrun','pCrRun'); sv('sp-clear','pClear'); sv('sp-chips','pChips');
+  sv('sp-crush','pCrushConc'); sv('sp-clean','pCleanCrush'); sv('sp-asphalt','pCrushAsp');
+  sv('sp-polysand','pPolySand'); sv('sp-adhesive','pAdhesive'); sv('sp-geo','pGeo');
+  sv('se-excavator','eExcavator'); sv('se-skid','eSkid'); sv('se-plate','ePlate');
+  sv('se-default','eDefault'); sv('se-fuel','eFuel');
+  sv('sd-load','dLoad'); sv('sd-truck','dTruck'); sv('sd-overhead','dOverhead');
+  sv('sp-markup','markup'); sv('sp-hst','hst'); sv('sp-min-markup','minMarkup');
+  sv('sp-deposit','deposit'); sv('sp-valid','validDays');
+  sv('sg-revenue','revenueTarget'); sv('sg-avgjob','avgJobTarget'); sv('sg-conv','convTarget');
+  var ten=document.getElementById('st-terms-en'); if(ten) ten.value=s.termsEn||DEFAULT_SETTINGS.termsEn;
+  var tes=document.getElementById('st-terms-es'); if(tes) tes.value=s.termsEs||DEFAULT_SETTINGS.termsEs;
+  updateMarkupPreview();
+  var mup=document.getElementById('sp-markup');
+  if(mup) mup.addEventListener('input', updateMarkupPreview);
+}
+
+function updateMarkupPreview() {
+  var mu=parseFloat(document.getElementById('sp-markup')&&document.getElementById('sp-markup').value)||25;
+  var margin=Math.round((mu/(100+mu))*100);
+  var mp=document.getElementById('set-markup-preview'); if(mp) mp.textContent=mu+'%';
+  var mgp=document.getElementById('set-margin-preview'); if(mgp) mgp.textContent=margin+'%';
+}
+
+function saveSettings() {
+  function gn(id) { var el=document.getElementById(id); return el?parseFloat(el.value)||0:0; }
+  function gs(id) { var el=document.getElementById(id); return el?el.value:''; }
+  var prevLogo = (DB.settings && DB.settings.logo) || '';
+  DB.settings = {
+    logo: prevLogo,
+    name:gs('set-name'), phone:gs('set-phone'), email:gs('set-email'),
+    website:gs('set-website'), ig:gs('set-ig'), addr:gs('set-addr'),
+    crewLeader:gn('set-crew-leader'), leadHand:gn('set-lead-hand'), helper:gn('set-helper'),
+    crewSize:gn('set-crew-size'), dailyRate:gn('set-daily-rate'),
+    p25mpa:gn('sp-25mpa'), p25ae:gn('sp-25ae'), p32mpa:gn('sp-32mpa'),
+    p35mpa:gn('sp-35mpa'), pMrBin25:gn('sp-mrbin25'), pMrBin32:gn('sp-mrbin32'),
+    pCrRun:gn('sp-crrun'), pClear:gn('sp-clear'), pChips:gn('sp-chips'),
+    pCrushConc:gn('sp-crush'), pCleanCrush:gn('sp-clean'), pCrushAsp:gn('sp-asphalt'),
+    pPolySand:gn('sp-polysand'), pAdhesive:gn('sp-adhesive'), pGeo:gn('sp-geo'),
+    eExcavator:gn('se-excavator'), eSkid:gn('se-skid'), ePlate:gn('se-plate'),
+    eDefault:gn('se-default'), eFuel:gn('se-fuel'),
+    dLoad:gn('sd-load'), dTruck:gn('sd-truck'), dOverhead:gn('sd-overhead'),
+    markup:gn('sp-markup'), hst:gn('sp-hst'), minMarkup:gn('sp-min-markup'),
+    deposit:gn('sp-deposit'), validDays:gn('sp-valid'),
+    termsEn:gs('st-terms-en'), termsEs:gs('st-terms-es'),
+    revenueTarget:gn('sg-revenue'), avgJobTarget:gn('sg-avgjob'), convTarget:gn('sg-conv')
+  };
+  saveAll();
+  var msg=document.getElementById('set-saved-msg');
+  if(msg){msg.style.display='block';setTimeout(function(){msg.style.display='none';},3000);}
+  toast(lang==='es'?'Configuración guardada':'Settings saved');
+  renderAll();
+}
+
+
+loadAll();
+if(!DB.settings || !DB.settings.name) DB.settings = Object.assign({}, DEFAULT_SETTINGS);
+updateTopbarLogo();
+renderAll();
+loadSettingsForm();
+if(DB.settings && DB.settings.logo) applyLogo(DB.settings.logo);
+</script>
+</body>
+</html>
+
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
   :root {
